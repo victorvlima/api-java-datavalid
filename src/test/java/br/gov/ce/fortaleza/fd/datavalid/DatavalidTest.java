@@ -27,7 +27,7 @@ public class DatavalidTest {
         try {
             response = facialService.validateFacialWithFile(
                 "25774435016",
-                new File("/path/to/photo.jpg")
+                new File("/img/foto.jpg")
             );
         } catch (IOException e) {
             // TODO Auto-generated catch block
