@@ -23,7 +23,7 @@ public class DatavalidTest {
         //);
 
         // Validar CPF + Foto (Arquivo)
-        FacialPfResponse response = null;
+        FacialPfResponse response = new FacialPfResponse();
         try {
             response = facialService.validateFacialWithFile(
                 "25774435016",
