@@ -1,3 +1,15 @@
 spring:
   application:
     name: api-java-datavalid
+
+# DataValid API Configuration
+# Obtain these credentials from: https://cliente.serpro.gov.br/
+datavalid:
+  consumer:
+    # API Consumer Key - Keep this secure!
+    key: ${DATAVALID_CONSUMER_KEY:}
+    # API Consumer Secret - Keep this secure!
+    secret: ${DATAVALID_CONSUMER_SECRET:}
+  # Use demonstration environment (true) or production (false)
+  use:
+    demo: true
