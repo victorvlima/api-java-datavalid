@@ -3,6 +3,8 @@ package br.gov.ce.fortaleza.fd.datavalid.controller;
 
 import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfRequestDto;
 import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfResponse;
+import br.gov.ce.fortaleza.fd.datavalid.service.FacialPfService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/datavalid/facial/pf")
 public class FacialPfController {
+
+	private final FacialPfService facialPfService;
+
+	@Autowired
+	public FacialPfController(FacialPfService facialPfService) {
+		this.facialPfService = facialPfService;
+	}
 
 	/**
 	 * Minimal endpoint to "validate" a face by CPF and image.
@@ -46,15 +55,16 @@ public class FacialPfController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("photo is required");
 		}
 
-		// Minimal behavior: return a mock response indicating a found face
-		FacialPfResponse response = new FacialPfResponse();
-		response.setFotoExiste(true);
-
-		FacialPfResponse.FaceValidationResult result = new FacialPfResponse.FaceValidationResult();
-		// fixed similarity for the minimal implementation
-		result.setFaceSimilaridade(0.92);
-		response.setFoto(result);
-
+		// Chamada real ao serviço
+		// TODO: obter token real de autenticação
+		String token = "06aef429-a981-3ec5-a1f8-71d38d86481e";
+		java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("upload", photo.getOriginalFilename());
+		photo.transferTo(tempFile);
+		FacialPfResponse response = facialPfService.validateFacial(digits, tempFile.toString(), token);
+		java.nio.file.Files.deleteIfExists(tempFile);
+		if (response == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao consultar serviço externo");
+		}
 		return ResponseEntity.ok(response);
 	}
 
@@ -86,12 +96,13 @@ public class FacialPfController {
 		if (!file.exists() || !file.isFile()) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("photoPath does not exist or is not a file");
 		}
-		// Aqui poderia ler o arquivo, mas para manter simples só simula
-		FacialPfResponse response = new FacialPfResponse();
-		response.setFotoExiste(true);
-		FacialPfResponse.FaceValidationResult result = new FacialPfResponse.FaceValidationResult();
-		result.setFaceSimilaridade(0.92);
-		response.setFoto(result);
+		// Chamada real ao serviço
+		// TODO: obter token real de autenticação
+		String token = "06aef429-a981-3ec5-a1f8-71d38d86481e";
+		FacialPfResponse response = facialPfService.validateFacial(digits, request.getPhotoPath(), token);
+		if (response == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao consultar serviço externo");
+		}
 		return ResponseEntity.ok(response);
 	}
 }
