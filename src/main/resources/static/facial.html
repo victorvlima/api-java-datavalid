@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Validação Facial - DataValid</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        label { display: block; margin-top: 1em; }
+        input[type=text] { width: 300px; }
+        button { margin-top: 1em; }
+        #result { margin-top: 2em; white-space: pre-wrap; background: #f8f8f8; padding: 1em; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Validação Facial</h1>
+    <form id="facialForm">
+        <label>CPF:
+            <input type="text" id="cpf" name="cpf" required maxlength="14" placeholder="Digite o CPF">
+        </label>
+        <label>Foto:
+            <input type="file" id="photo" name="photo" accept="image/*" required>
+        </label>
+        <button type="submit">Validar</button>
+    </form>
+    <div id="result"></div>
+    <script>
+    document.getElementById('facialForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const cpf = document.getElementById('cpf').value;
+        const photoInput = document.getElementById('photo');
+        const resultDiv = document.getElementById('result');
+        resultDiv.textContent = 'Enviando...';
+        const formData = new FormData();
+        formData.append('cpf', cpf);
+        if (photoInput.files.length > 0) {
+            formData.append('photo', photoInput.files[0]);
+        }
+        try {
+            const resp = await fetch('/api/datavalid/facial/pf', {
+                method: 'POST',
+                body: formData
+            });
+            const text = await resp.text();
+            resultDiv.textContent = `Status: ${resp.status}\n` + text;
+        } catch (err) {
+            resultDiv.textContent = 'Erro: ' + err;
+        }
+    };
+    </script>
+</body>
+</html>
