@@ -1,18 +1,18 @@
 package br.gov.ce.fortaleza.fd.datavalid.service;
 
-import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
-import org.apache.commons.logging.Log;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
-import java.util.Map;
-import java.util.logging.Logger;
-import java.util.HashMap;
+
+import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfResponse;
 
 @Service
 public class FacialPfService {
@@ -40,22 +40,35 @@ public class FacialPfService {
 				return null;
 			}
 			byte[] imageBytes = Files.readAllBytes(path);
-			Logger.getLogger(FacialPfService.class.getName()).info("Tamanho do arquivo da foto (bytes): " + imageBytes.length);
-			String base64 = Base64.getEncoder().encodeToString(imageBytes);
-			Logger.getLogger(FacialPfService.class.getName()).info("Início do base64: " + base64.substring(0, Math.min(50, base64.length())));
-			String fileName = path.getFileName().toString();
-			String fileExt = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1) : "";
-			Logger.getLogger(FacialPfService.class.getName()).info("Extensão do arquivo da foto: " + fileExt);
-            
+
+			// Detecta o tipo da imagem para o prefixo correto
+			String fileName = path.getFileName().toString().toLowerCase();
+			String prefix;
+			if (fileName.endsWith(".png")) {
+				prefix = "data:image/png;base64,";
+			} else {
+				prefix = "data:image/jpeg;base64,";
+			}
+			// Remove quebras de linha do base64
+			String base64Raw = Base64.getEncoder().encodeToString(imageBytes).replaceAll("\r|\n", "");
+			String base64 = prefix + base64Raw;
+
+			// Loga os primeiros 100 caracteres do base64 para conferência
+			Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(100, base64.length())));
+
 			Map<String, Object> payload = new HashMap<>();
 			payload.put("cpf", digits);
 			payload.put("foto", base64);
+
+			// Loga o payload final (atenção: pode conter dados sensíveis)
+			Logger.getLogger(FacialPfService.class.getName()).info("Payload enviado ao SERPRO: {cpf: " + digits + ", foto: " + base64.substring(0, Math.min(80, base64.length())) + "...}");
 
 			try {
 				FacialPfResponse response = webClient.post()
 					.uri(ENDPOINT)
 					.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
 					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+					.header("x-signature", "1")
 					.accept(MediaType.APPLICATION_JSON)
 					.bodyValue(payload)
 					.retrieve()
@@ -65,6 +78,7 @@ public class FacialPfService {
 			} catch (org.springframework.web.reactive.function.client.WebClientResponseException ex) {
 				Logger.getLogger(FacialPfService.class.getName()).severe("Erro na chamada ao SERPRO: " + ex.getStatusCode());
 				Logger.getLogger(FacialPfService.class.getName()).severe("Detalhes do erro: " + ex.toString());
+				Logger.getLogger(FacialPfService.class.getName()).severe("Corpo da resposta de erro: " + ex.getResponseBodyAsString());
 				return null;
 			}
 		} catch (Exception e) {
