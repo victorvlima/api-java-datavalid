@@ -14,7 +14,8 @@ import java.util.HashMap;
 @Service
 public class FacialPfService {
 
-	private static final String ENDPOINT = "https://gateway.apiserpro.serpro.gov.br/datavalid/v4/pf-facial";
+	//private static final String ENDPOINT = "https://gateway.apiserpro.serpro.gov.br/datavalid/v4/pf-facial";
+	private static final String ENDPOINT = "https://gateway.apiserpro.serpro.gov.br/datavalid-demonstracao/v4/pf-facial";
 
 	private final WebClient webClient = WebClient.builder().build();
 
@@ -33,8 +34,8 @@ public class FacialPfService {
 			Path path = Path.of(photoPath);
 			byte[] imageBytes = Files.readAllBytes(path);
 			String base64 = Base64.getEncoder().encodeToString(imageBytes);
-
-			Map<String, Object> payload = new HashMap<>();
+            
+            Map<String, Object> payload = new HashMap<>();
 			payload.put("cpf", digits);
 			payload.put("foto", base64);
 
