@@ -53,22 +53,36 @@ public class FacialPfService {
 			String base64Raw = Base64.getEncoder().encodeToString(imageBytes).replaceAll("\r|\n", "");
 			String base64 = prefix + base64Raw;
 
-			// Loga os primeiros 100 caracteres do base64 para conferência
-			Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(100, base64.length())));
+			// Loga os primeiros 50 caracteres do base64 para conferência
+			Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(50, base64.length())));
 
+
+
+			// Monta objeto biometria_facial conforme exemplo do SERPRO
+			Map<String, Object> biometriaFacial = new HashMap<>();
+			biometriaFacial.put("formato", fileName.endsWith(".png") ? "PNG" : "JPG");
+			biometriaFacial.put("vivacidade", true); // ou false, conforme necessidade
+			biometriaFacial.put("base64", base64Raw); // apenas o base64, sem prefixo
+
+			// Monta objeto validacao
+			Map<String, Object> validacao = new HashMap<>();
+			//validacao.put("endereco", new HashMap<>()); // vazio
+			//validacao.put("cnh", new HashMap<>()); // vazio
+			validacao.put("biometria_facial", biometriaFacial);
+
+			// Monta payload final
 			Map<String, Object> payload = new HashMap<>();
 			payload.put("cpf", digits);
-			payload.put("foto", base64);
+			payload.put("validacao", validacao);
 
 			// Loga o payload final (atenção: pode conter dados sensíveis)
-			Logger.getLogger(FacialPfService.class.getName()).info("Payload enviado ao SERPRO: {cpf: " + digits + ", foto: " + base64.substring(0, Math.min(80, base64.length())) + "...}");
+			Logger.getLogger(FacialPfService.class.getName()).info("Payload enviado ao SERPRO: " + payload.toString());
 
 			try {
 				FacialPfResponse response = webClient.post()
 					.uri(ENDPOINT)
 					.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
 					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-					.header("x-signature", "1")
 					.accept(MediaType.APPLICATION_JSON)
 					.bodyValue(payload)
 					.retrieve()
@@ -76,9 +90,9 @@ public class FacialPfService {
 					.block();
 				return response;
 			} catch (org.springframework.web.reactive.function.client.WebClientResponseException ex) {
-				Logger.getLogger(FacialPfService.class.getName()).severe("Erro na chamada ao SERPRO: " + ex.getStatusCode());
-				Logger.getLogger(FacialPfService.class.getName()).severe("Detalhes do erro: " + ex.toString());
-				Logger.getLogger(FacialPfService.class.getName()).severe("Corpo da resposta de erro: " + ex.getResponseBodyAsString());
+				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Erro na chamada ao SERPRO: " + ex.getStatusCode());
+				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Detalhes do erro: " + ex.toString());
+				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Corpo da resposta de erro: " + ex.getResponseBodyAsString());
 				return null;
 			}
 		} catch (Exception e) {

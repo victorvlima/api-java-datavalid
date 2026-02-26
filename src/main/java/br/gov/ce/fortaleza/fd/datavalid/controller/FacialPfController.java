@@ -72,8 +72,8 @@ public class FacialPfController {
 	public ResponseEntity<?> info() {
 		Map<String, Object> info = new HashMap<>();
 		info.put("endpoint", "/api/datavalid/facial/pf");
-		info.put("method", "POST (multipart: cpf, photo)");
-		info.put("note", "Use POST to submit CPF and photo. This GET is for testing.");
+		info.put("method", "POST (multipart: cpf, foto)");
+		info.put("note", "Use POST to submit CPF and foto. This GET is for testing.");
 		return ResponseEntity.ok(info);
 	}
 
