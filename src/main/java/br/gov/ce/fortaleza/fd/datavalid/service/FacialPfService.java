@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfResponse;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class FacialPfService {
@@ -56,18 +57,16 @@ public class FacialPfService {
 			// Loga os primeiros 50 caracteres do base64 para conferência
 			Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(50, base64.length())));
 
-
-
 			// Monta objeto biometria_facial conforme exemplo do SERPRO
 			Map<String, Object> biometriaFacial = new HashMap<>();
 			biometriaFacial.put("formato", fileName.endsWith(".png") ? "PNG" : "JPG");
 			biometriaFacial.put("vivacidade", true); // ou false, conforme necessidade
 			biometriaFacial.put("base64", base64Raw); // apenas o base64, sem prefixo
 
-			// Monta objeto validacao
+			// Monta objeto validacao com endereco e cnh vazios
 			Map<String, Object> validacao = new HashMap<>();
-			//validacao.put("endereco", new HashMap<>()); // vazio
-			//validacao.put("cnh", new HashMap<>()); // vazio
+			validacao.put("endereco", new HashMap<>()); // vazio
+			validacao.put("cnh", new HashMap<>()); // vazio
 			validacao.put("biometria_facial", biometriaFacial);
 
 			// Monta payload final
@@ -75,8 +74,14 @@ public class FacialPfService {
 			payload.put("cpf", digits);
 			payload.put("validacao", validacao);
 
-			// Loga o payload final (atenção: pode conter dados sensíveis)
-			Logger.getLogger(FacialPfService.class.getName()).info("Payload enviado ao SERPRO: " + payload.toString());
+			// Loga o payload final serializado (atenção: pode conter dados sensíveis)
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				String jsonPayload = mapper.writeValueAsString(payload);
+				Logger.getLogger(FacialPfService.class.getName()).info("Payload JSON enviado ao SERPRO: " + jsonPayload);
+			} catch (Exception e) {
+				Logger.getLogger(FacialPfService.class.getName()).warning("Falha ao serializar payload para log: " + e.getMessage());
+			}
 
 			try {
 				FacialPfResponse response = webClient.post()
