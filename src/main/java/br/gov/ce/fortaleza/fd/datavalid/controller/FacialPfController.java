@@ -30,33 +30,21 @@ public class FacialPfController {
 		this.facialPfService = facialPfService;
 	}
 
-	/**
-	 * Minimal endpoint to "validate" a face by CPF and image.
-	 * This implementation performs basic parameter validation and returns
-	 * a mock success response. Replace the mock behavior with real
-	 * integration to DataValid services when available.
-	 */
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> validateByCpf(
 			@RequestParam("cpf") String cpf,
 			@RequestParam("photo") MultipartFile photo
 	) throws IOException {
-
 		if (cpf == null || cpf.trim().isEmpty()) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cpf is required");
 		}
-
 		String digits = cpf.replaceAll("\\D", "");
 		if (digits.length() != 11) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cpf must contain 11 digits");
 		}
-
 		if (photo == null || photo.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("photo is required");
 		}
-
-		// Chamada real ao serviço
-		// TODO: obter token real de autenticação
 		String token = "06aef429-a981-3ec5-a1f8-71d38d86481e";
 		java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("upload", photo.getOriginalFilename());
 		photo.transferTo(tempFile);
@@ -77,9 +65,6 @@ public class FacialPfController {
 		return ResponseEntity.ok(info);
 	}
 
-	/**
-	 * Novo endpoint: aceita JSON { cpf, photoPath } e simula validação facial.
-	 */
 	@PostMapping(path = "/json", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> validateByCpfJson(@org.springframework.web.bind.annotation.RequestBody FacialPfRequestDto request) throws IOException {
 		if (request.getCpf() == null || request.getCpf().trim().isEmpty()) {

@@ -1,28 +1,26 @@
 package br.gov.ce.fortaleza.fd.datavalid.service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfResponse;
-import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class FacialPfService {
 
 	//private static final String ENDPOINT = "https://gateway.apiserpro.serpro.gov.br/datavalid/v4/pf-facial";
 	private static final String ENDPOINT = "https://gateway.apiserpro.serpro.gov.br/datavalid-demonstracao/v4/pf-facial";
-
-	private final WebClient webClient = WebClient.builder().build();
 
 	/**
 	 * Valida facial via SERPRO DataValid.
@@ -75,23 +73,31 @@ public class FacialPfService {
 			payload.put("cpf", digits);
 			payload.put("validacao", validacao);
 
-			// Loga o payload final serializado (atenção: pode conter dados sensíveis)
-
 			try {
-				FacialPfResponse response = webClient.post()
-					.uri(ENDPOINT)
-					.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-					.accept(MediaType.APPLICATION_JSON)
-					.bodyValue(payload)
-					.retrieve()
-					.bodyToMono(FacialPfResponse.class)
-					.block();
+				// Serializa o payload para JSON
+				tools.jackson.databind.ObjectMapper mapper = new tools.jackson.databind.ObjectMapper();
+				String jsonPayload = mapper.writeValueAsString(payload);
+
+				HttpClient client = HttpClient.newHttpClient();
+				HttpRequest request = HttpRequest.newBuilder()
+						.uri(URI.create(ENDPOINT))
+						.header("Authorization", "Bearer " + token)
+						.header("Content-Type", "application/json")
+						.POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+						.build();
+
+				HttpResponse<String> responseHttp = client.send(request, HttpResponse.BodyHandlers.ofString());
+				String responseBody = responseHttp.body();
+
+				FacialPfResponse response = null;
+				try {
+					response = mapper.readValue(responseBody, FacialPfResponse.class);
+				} catch (Exception e) {
+					Logger.getLogger(FacialPfService.class.getName()).warning("Falha ao desserializar resposta: " + e.getMessage());
+				}
 				return response;
-			} catch (org.springframework.web.reactive.function.client.WebClientResponseException ex) {
-				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Erro na chamada ao SERPRO: " + ex.getStatusCode());
-				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Detalhes do erro: " + ex.toString());
-				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Corpo da resposta de erro: " + ex.getResponseBodyAsString());
+			} catch (Exception ex) {
+				Logger.getLogger(FacialPfService.class.getName()).severe("[ERRO] Erro na chamada ao SERPRO: " + ex.getMessage());
 				return null;
 			}
 		} catch (Exception e) {
