@@ -47,14 +47,14 @@ public class FacialPfService {
 			if (fileName.endsWith(".png")) {
 				prefix = "data:image/png;base64,";
 			} else {
-				prefix = "data:image/jpeg;base64,";
+				prefix = "data:image/jpg;base64,";
 			}
 			// Remove quebras de linha do base64
 			String base64Raw = Base64.getEncoder().encodeToString(imageBytes).replaceAll("\r|\n", "");
 			String base64 = prefix + base64Raw;
 
 			// Loga os primeiros 50 caracteres do base64 para conferência
-			Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(50, base64.length())));
+			//Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(50, base64.length())));
 
 			// Monta objeto biometria_facial exatamente conforme exemplo
 			Map<String, Object> biometriaFacial = new LinkedHashMap<>();
