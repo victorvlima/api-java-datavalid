@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -57,31 +58,24 @@ public class FacialPfService {
 			// Loga os primeiros 50 caracteres do base64 para conferência
 			Logger.getLogger(FacialPfService.class.getName()).info("Base64 da imagem (início): " + base64.substring(0, Math.min(50, base64.length())));
 
-			// Monta objeto biometria_facial conforme exemplo do SERPRO
-			Map<String, Object> biometriaFacial = new HashMap<>();
+			// Monta objeto biometria_facial exatamente conforme exemplo
+			Map<String, Object> biometriaFacial = new LinkedHashMap<>();
 			biometriaFacial.put("formato", fileName.endsWith(".png") ? "PNG" : "JPG");
 			biometriaFacial.put("vivacidade", true); // ou false, conforme necessidade
-			biometriaFacial.put("base64", base64Raw); // apenas o base64, sem prefixo
+			biometriaFacial.put("base64", base64Raw);
 
-			// Monta objeto validacao com endereco e cnh vazios
-			Map<String, Object> validacao = new HashMap<>();
-			validacao.put("endereco", new HashMap<>()); // vazio
-			validacao.put("cnh", new HashMap<>()); // vazio
+			// Monta objeto validacao com endereco e cnh vazios (LinkedHashMap para garantir ordem)
+			Map<String, Object> validacao = new LinkedHashMap<>();
+			validacao.put("endereco", new LinkedHashMap<>()); // vazio
+			validacao.put("cnh", new LinkedHashMap<>()); // vazio
 			validacao.put("biometria_facial", biometriaFacial);
 
-			// Monta payload final
-			Map<String, Object> payload = new HashMap<>();
+			// Monta payload final (LinkedHashMap para garantir ordem)
+			Map<String, Object> payload = new LinkedHashMap<>();
 			payload.put("cpf", digits);
 			payload.put("validacao", validacao);
 
 			// Loga o payload final serializado (atenção: pode conter dados sensíveis)
-			try {
-				ObjectMapper mapper = new ObjectMapper();
-				String jsonPayload = mapper.writeValueAsString(payload);
-				Logger.getLogger(FacialPfService.class.getName()).info("Payload JSON enviado ao SERPRO: " + jsonPayload);
-			} catch (Exception e) {
-				Logger.getLogger(FacialPfService.class.getName()).warning("Falha ao serializar payload para log: " + e.getMessage());
-			}
 
 			try {
 				FacialPfResponse response = webClient.post()
