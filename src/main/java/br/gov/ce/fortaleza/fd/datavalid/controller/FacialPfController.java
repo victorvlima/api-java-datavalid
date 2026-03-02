@@ -1,4 +1,3 @@
-
 package br.gov.ce.fortaleza.fd.datavalid.controller;
 
 import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfRequestDto;
