@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import br.gov.ce.fortaleza.fd.datavalid.model.FacialPfResponse;
 
 @Service
@@ -75,8 +77,8 @@ public class FacialPfService {
 
 			try {
 				// Serializa o payload para JSON
-				tools.jackson.databind.ObjectMapper mapper = new tools.jackson.databind.ObjectMapper();
-				String jsonPayload = mapper.writeValueAsString(payload);
+			ObjectMapper mapper = new ObjectMapper();
+			String jsonPayload = mapper.writeValueAsString(payload);
 
 				HttpClient client = HttpClient.newHttpClient();
 				HttpRequest request = HttpRequest.newBuilder()
