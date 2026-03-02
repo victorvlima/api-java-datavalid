@@ -91,11 +91,16 @@ public class FacialPfService {
 				HttpResponse<String> responseHttp = client.send(request, HttpResponse.BodyHandlers.ofString());
 				String responseBody = responseHttp.body();
 
-				FacialPfResponse response = null;
-				try {
-					response = mapper.readValue(responseBody, FacialPfResponse.class);
-				} catch (Exception e) {
-					Logger.getLogger(FacialPfService.class.getName()).warning("Falha ao desserializar resposta: " + e.getMessage());
+			// Log da resposta completa para debug
+			Logger.getLogger(FacialPfService.class.getName()).info("Resposta da API SERPRO: " + responseBody);
+
+			FacialPfResponse response = null;
+			try {
+				response = mapper.readValue(responseBody, FacialPfResponse.class);
+				Logger.getLogger(FacialPfService.class.getName()).info("Resposta desserializada com sucesso");
+			} catch (Exception e) {
+				Logger.getLogger(FacialPfService.class.getName()).warning("Falha ao desserializar resposta: " + e.getMessage());
+				e.printStackTrace();
 				}
 				return response;
 			} catch (Exception ex) {
