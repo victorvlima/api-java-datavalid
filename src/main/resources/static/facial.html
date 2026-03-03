@@ -2,50 +2,411 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Validação Facial - DataValid</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        label { display: block; margin-top: 1em; }
-        input[type=text] { width: 300px; }
-        button { margin-top: 1em; }
-        #result { margin-top: 2em; white-space: pre-wrap; background: #f8f8f8; padding: 1em; border-radius: 5px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 2em;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1.5em;
+            font-size: 1.8em;
+        }
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #555;
+            font-weight: 500;
+        }
+        input[type=text] {
+            width: 100%;
+            padding: 0.75em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        input[type=file] {
+            width: 100%;
+            padding: 0.5em;
+        }
+        button {
+            width: 100%;
+            padding: 1em;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        
+        /* Resultado Visual */
+        .result-container {
+            margin-top: 2em;
+            display: none;
+        }
+        .result-container.show { display: block; }
+        
+        .result-header {
+            background: #f8f9fa;
+            padding: 2em;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            margin-bottom: 1em;
+        }
+        
+        .probability-container {
+            display: inline-block;
+            position: relative;
+            margin-top: 1em;
+        }
+        
+        .probability-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(#28a745 0deg, #28a745 calc(var(--probability) * 3.6deg), #e9ecef calc(var(--probability) * 3.6deg));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .probability-inner {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .probability-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .probability-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 0.2em;
+        }
+        
+        .probability-text {
+            margin-top: 0.5em;
+            font-size: 0.9em;
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .dados-principais {
+            background: #f8f9fa;
+            padding: 1.5em;
+            border-radius: 10px;
+        }
+        
+        .dados-header {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dados-header .info-icon {
+            width: 20px;
+            height: 20px;
+            background: #6c757d;
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+        
+        .dado-item {
+            display: flex;
+            align-items: center;
+            padding: 1em;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.5em;
+        }
+        
+        .check-icon {
+            width: 24px;
+            height: 24px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1em;
+            flex-shrink: 0;
+        }
+        
+        .check-icon::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .dado-content {
+            flex: 1;
+        }
+        
+        .dado-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 0.2em;
+        }
+        
+        .dado-value {
+            font-size: 1em;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1em;
+            border-radius: 5px;
+            margin-top: 1em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2em;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <h1>Validação Facial</h1>
-    <form id="facialForm">
-        <label>CPF:
-            <input type="text" id="cpf" name="cpf" required maxlength="14" placeholder="Digite o CPF">
-        </label>
-        <label>Foto:
-            <input type="file" id="photo" name="photo" accept="image/*" required>
-        </label>
-        <button type="submit">Validar</button>
-    </form>
-    <div id="result"></div>
+    <div class="container">
+        <h1>Validação Facial</h1>
+        <form id="facialForm">
+            <div class="form-group">
+                <label for="cpf">CPF:</label>
+                <input type="text" id="cpf" name="cpf" required maxlength="14" placeholder="Digite o CPF (apenas números)">
+            </div>
+            <div class="form-group">
+                <label for="photo">Foto:</label>
+                <input type="file" id="photo" name="photo" accept="image/*" required>
+            </div>
+            <button type="submit">Validar</button>
+        </form>
+        
+        <div id="result" class="result-container">
+            <!-- Resultado será inserido aqui -->
+        </div>
+    </div>
+    
     <script>
     document.getElementById('facialForm').onsubmit = async function(e) {
         e.preventDefault();
         const cpf = document.getElementById('cpf').value;
         const photoInput = document.getElementById('photo');
         const resultDiv = document.getElementById('result');
-        resultDiv.textContent = 'Enviando...';
+        
+        // Mostra loading
+        resultDiv.className = 'result-container show';
+        resultDiv.innerHTML = '<div class="loading">Enviando...</div>';
+        
+        // Cria FormData
         const formData = new FormData();
         formData.append('cpf', cpf);
+        
+        // Cria URL da imagem para preview
+        let photoUrl = '';
         if (photoInput.files.length > 0) {
             formData.append('photo', photoInput.files[0]);
+            photoUrl = URL.createObjectURL(photoInput.files[0]);
         }
+        
         try {
             const resp = await fetch('/api/datavalid/facial/pf', {
                 method: 'POST',
                 body: formData
             });
-            const text = await resp.text();
-            resultDiv.textContent = `Status: ${resp.status}\n` + text;
+            
+            if (resp.ok) {
+                const data = await resp.json();
+                displayResult(data, photoUrl, cpf);
+            } else {
+                const errorText = await resp.text();
+                resultDiv.innerHTML = `<div class="error-message">Erro ${resp.status}: ${errorText}</div>`;
+            }
         } catch (err) {
-            resultDiv.textContent = 'Erro: ' + err;
+            resultDiv.innerHTML = `<div class="error-message">Erro: ${err.message}</div>`;
         }
     };
+    
+    function displayResult(data, photoUrl, cpf) {
+        const resultDiv = document.getElementById('result');
+        
+        // Debug: mostra a resposta completa no console
+        console.log('Resposta da API:', data);
+        
+        // Extrai dados da biometria facial
+        let probability = 0;
+        let probabilityLabel = 'Baixa probabilidade';
+        let vivacidade = '';
+        let disponivel = false;
+        
+        if (data.biometria_facial) {
+            // Similaridade vem como decimal entre 0 e 1, converte para percentual inteiro
+            if (data.biometria_facial.similaridade !== undefined && data.biometria_facial.similaridade !== null) {
+                probability = Math.round(data.biometria_facial.similaridade * 100);
+            }
+            
+            // Define o texto baseado na probabilidade conforme tabela
+            // Altíssima: 100% - 93%
+            // Alta: 92,99% - 85%
+            // Baixa: 84,99% - 32%
+            // Baixíssima: 31,99% - 0%
+            if (probability >= 93) {
+                probabilityLabel = 'Altíssima probabilidade';
+            } else if (probability >= 85) {
+                probabilityLabel = 'Alta probabilidade';
+            } else if (probability >= 32) {
+                probabilityLabel = 'Baixa probabilidade';
+            } else {
+                probabilityLabel = 'Baixíssima probabilidade';
+            }
+            
+            vivacidade = data.biometria_facial.vivacidade || '';
+            disponivel = data.biometria_facial.disponivel || false;
+        }
+        
+        const html = `
+            <div class="result-header">
+                ${photoUrl ? `<img src="${photoUrl}" alt="Foto" class="profile-photo">` : ''}
+                
+                <div class="probability-container">
+                    <div class="probability-circle" style="--probability: ${probability}">
+                        <div class="probability-inner">
+                            <div class="probability-value">${probability}%</div>
+                        </div>
+                    </div>
+                    <div class="probability-text">${probabilityLabel}</div>
+                </div>
+            </div>
+            
+            <div class="dados-principais">
+                <div class="dados-header">
+                    Dados principais
+                    <span class="info-icon">i</span>
+                </div>
+                
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">CPF</div>
+                        <div class="dado-value">${cpf}</div>
+                    </div>
+                </div>
+                
+                ${vivacidade ? `
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">Vivacidade</div>
+                        <div class="dado-value">${vivacidade}</div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${data.rfb_existe !== undefined ? `
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">RFB (Receita Federal)</div>
+                        <div class="dado-value">${data.rfb_existe ? 'Cadastro encontrado' : 'Não encontrado'}</div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${data.cnh_existe !== undefined ? `
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">CNH</div>
+                        <div class="dado-value">${data.cnh_existe ? 'Cadastro encontrado' : 'Não encontrado'}</div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${data.rfb && data.rfb.nome ? `
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">Nome (RFB)</div>
+                        <div class="dado-value">${data.rfb.nome}</div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${data.cnh && data.cnh.nome ? `
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">Nome (CNH)</div>
+                        <div class="dado-value">${data.cnh.nome}</div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${disponivel !== undefined ? `
+                <div class="dado-item">
+                    <div class="check-icon"></div>
+                    <div class="dado-content">
+                        <div class="dado-label">Biometria</div>
+                        <div class="dado-value">${disponivel ? 'Disponível' : 'Não disponível'}</div>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        resultDiv.className = 'result-container show';
+        resultDiv.innerHTML = html;
+    }
     </script>
 </body>
 </html>
