@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validação Facial com CPF</title>
+    <link rel="stylesheet" href="validacao.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📸 Validação Facial</h1>
+            <p class="subtitle">Capture sua foto e valide com o CPF</p>
+            <div class="requirements">
+                <small>✓ Rosto centralizado e frontal</small>
+                <small>✓ Boa iluminação</small>
+                <small>✓ Sem óculos escuros</small>
+                <small class="warning-badge">⚠️ Posicione-se a 30-40cm da câmera</small>
+            </div>
+        </header>
+
+        <main>
+            <!-- Seção de Captura e CPF -->
+            <div id="captureArea" class="capture-section">
+                <div class="form-group">
+                    <label for="cpf">CPF:</label>
+                    <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF (apenas números)" maxlength="14">
+                </div>
+
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    
+                    <!-- Overlay com guia visual -->
+                    <div class="overlay">
+                        <div class="guide-circle"></div>
+                        <div class="guide-text">Centralize seu rosto no óvalo e fique a 30-40cm</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="captureBtn" class="btn btn-primary">
+                        <span class="icon">📷</span>
+                        Capturar Foto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Preview e Envio -->
+            <div id="previewArea" class="preview-section hidden">
+                <div class="form-group">
+                    <label for="cpfDisplay">CPF:</label>
+                    <input type="text" id="cpfDisplay" name="cpfDisplay" readonly>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="canvas"></canvas>
+                    <div class="image-info">
+                        <span class="badge">480x640px</span>
+                        <span class="badge">JPG 90%</span>
+                        <span class="badge">3:4</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="retryBtn" class="btn btn-secondary">
+                        <span class="icon">🔄</span>
+                        Tentar Novamente
+                    </button>
+                    <button id="validateBtn" class="btn btn-success">
+                        <span class="icon">✓</span>
+                        Validar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Resultado -->
+            <div id="resultArea" class="result-section hidden">
+                <h2>Resultado da Validação</h2>
+                <div id="resultContent"></div>
+                
+                <div class="controls">
+                    <button id="newValidationBtn" class="btn btn-primary">
+                        <span class="icon">🔄</span>
+                        Nova Validação
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="status" id="status">
+                <span class="status-dot"></span>
+                <span id="statusText">Aguardando permissão da câmera...</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="validacao.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Imagem Profissional</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📸 Captura de Imagem</h1>
+            <p class="subtitle">Posicione seu rosto dentro do círculo guia</p>
+        </header>
+
+        <main>
+            <!-- Área de Captura -->
+            <div id="captureArea" class="capture-section">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    
+                    <!-- Overlay com guia visual -->
+                    <div class="overlay">
+                        <div class="guide-circle"></div>
+                        <div class="guide-text">Centralize seu rosto no círculo</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="captureBtn" class="btn btn-primary">
+                        <span class="icon">📷</span>
+                        Capturar Foto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Preview -->
+            <div id="previewArea" class="preview-section hidden">
+                <div class="canvas-container">
+                    <canvas id="canvas"></canvas>
+                    <div class="image-info">
+                        <span class="badge">600x600px</span>
+                        <span class="badge">JPG 90%</span>
+                        <span class="badge">3:4</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="retryBtn" class="btn btn-secondary">
+                        <span class="icon">🔄</span>
+                        Tentar Novamente
+                    </button>
+                    <button id="downloadBtn" class="btn btn-success">
+                        <span class="icon">⬇️</span>
+                        Download
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="status" id="status">
+                <span class="status-dot"></span>
+                <span id="statusText">Aguardando permissão da câmera...</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

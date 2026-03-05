@@ -64,7 +64,7 @@ public class FacialPfService {
 			// Monta objeto biometria_facial exatamente conforme exemplo
 			Map<String, Object> biometriaFacial = new LinkedHashMap<>();
 			biometriaFacial.put("formato", fileName.endsWith(".png") ? "PNG" : "JPG");
-			biometriaFacial.put("vivacidade", true); // ou false, conforme necessidade
+			biometriaFacial.put("vivacidade", false); // false para imagens estáticas capturadas
 			biometriaFacial.put("base64", base64Raw);
 
 			// Monta objeto validacao com endereco e cnh vazios (LinkedHashMap para garantir ordem)
